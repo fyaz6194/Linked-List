@@ -1,4 +1,5 @@
 #include "SparseArray.h"
+
 bool SparseArray::isAnyDefault() const {
     SparseArrayNode* tempptr = headPointer;
     if (headPointer == nullptr)
@@ -47,9 +48,22 @@ SparseArrayNode* SparseArray::getExactNode(int index) {
     return nullptr;
 }
 SparseArrayNode* SparseArray::getPreviousNode(int index) {
-    if (getExactNode(index) == nullptr)
-        return nullptr;
-    return getExactNode(index)->next;
+    SparseArrayNode* Perviousptr = nullptr;
+    SparseArrayNode* tempPtr = headPointer -> next;
+    unsigned long int count = 0;
+    while (tempPtr != nullptr) {
+        
+            if (tempPtr != headPointer && count <= 0) {
+                Perviousptr = headPointer;
+                count++;
+            }
+            if (tempPtr != headPointer && count > 0 && tempPtr->index == index)
+                return Perviousptr;
+            if(count > 0)
+                Perviousptr = Perviousptr->next;
+        tempPtr = tempPtr->next;
+    }
+    return nullptr;
 }
 SparseArrayNode* SparseArray::copyLinkedList(const SparseArrayNode* p_old_head) const {
     SparseArrayNode* tempPtr = nullptr;
@@ -82,7 +96,6 @@ SparseArrayNode* SparseArray::copyLinkedList(const SparseArrayNode* p_old_head) 
     return newNodePtr;
 }
 bool SparseArray::invariant() const {
-    cout << endl << isSorted() << endl;
     bool boolReturn;
     boolReturn = isAnyDefault() == false && isSorted() == true;
     return boolReturn;
@@ -107,7 +120,6 @@ SparseArray::~SparseArray() {
     assert(invariant());
     clear();
     headPointer = nullptr;
-
 }
 SparseArray& SparseArray::operator= (const SparseArray& to_copy) {
     assert(to_copy.invariant());
@@ -127,7 +139,6 @@ const string& SparseArray::getDefaultValue() const {
     return defaultValue;
 }
 bool SparseArray::isSet(int index) const {
-
     if (getExactNode(index) != nullptr) {
         return true;
     }
@@ -176,7 +187,7 @@ void SparseArray::insert(int index, const string& value) {
         {
             SparseArrayNode* tempPtr = headPointer;
             while (tempPtr != nullptr) {
-                if (tempPtr->index == index) {
+                if ((int)tempPtr->index == (int)index) {
                     tempPtr->value = value;
                     assert(invariant());
                     return;
@@ -188,7 +199,7 @@ void SparseArray::insert(int index, const string& value) {
             unsigned long int checkIndex;
             while (tempPtr != nullptr) { //find the address of present index is less then inserting index
                 checkIndex = tempPtr->index;
-                if (index < checkIndex) {
+                if ((int)index < (int)checkIndex) {
                     break;
                 }
                 nullPtrPervious = tempPtr;
@@ -214,41 +225,23 @@ void SparseArray::insert(int index, const string& value) {
         if (headPointer == nullptr) {
             return;
         }
-        SparseArrayNode* tempPtr = headPointer;
-        while (tempPtr != nullptr) {
-
-            if (tempPtr->index == index) {
-                if (tempPtr == headPointer) {
-                    headPointer = tempPtr->next;
-                }
-                else if (tempPtr != headPointer) {
-                    remove(tempPtr->index);
-                }
-                return;
-            }
-            tempPtr = tempPtr->next;
-        }
+        remove(index);
     }
     assert(invariant());
 }
 void SparseArray::remove(int index) {
     assert(invariant());
-    while (headPointer != nullptr) { // use can use if condition here
-        if (headPointer->index == index) {
-            headPointer = headPointer->next;
+    SparseArrayNode* tempPtr = headPointer;
+    while (tempPtr != nullptr) {
+        if (tempPtr->index == index && tempPtr == headPointer) {
+                headPointer = headPointer->next;
         }
-        else {
-            SparseArrayNode* tempptr = headPointer;
-            while (tempptr->next != nullptr) {
-                if (getPreviousNode(tempptr->index)->index == index) {
-                    tempptr->next = getPreviousNode(tempptr->index)->next;
-                    break;
-                }
-                tempptr = getPreviousNode(tempptr->index);
-            }
-            tempptr = nullptr;
+        else if(tempPtr -> index == index && tempPtr != headPointer){
+                SparseArrayNode* perviousNextPtr = getPreviousNode(index);
+
+                perviousNextPtr->next = tempPtr->next;
         }
-        break;
+        tempPtr = tempPtr->next;
     }
     assert(invariant());
 }
