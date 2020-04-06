@@ -15,16 +15,12 @@ bool SparseArray::isAnyDefault() const {
 bool SparseArray::isSorted() const {
     if (headPointer == nullptr)
         return true;
-    int beforeIndex;
-    SparseArrayNode* tempPtr = headPointer;
+    SparseArrayNode* tempPtr = headPointer->next;
+    SparseArrayNode* tempPtr2 = headPointer;
     while (tempPtr != nullptr) {
-        if (tempPtr == headPointer) {
-            beforeIndex = tempPtr->index;
-        }
-        if (beforeIndex > tempPtr->index) {
+        if (tempPtr->index < tempPtr2->index)
             return false;
-        }
-        beforeIndex = tempPtr->index;
+        tempPtr2 = tempPtr2->next;
         tempPtr = tempPtr->next;
     }
     return true;
