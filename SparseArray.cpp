@@ -48,21 +48,17 @@ SparseArrayNode* SparseArray::getExactNode(int index) {
     return nullptr;
 }
 SparseArrayNode* SparseArray::getPreviousNode(int index) {
-    SparseArrayNode* Perviousptr = nullptr;
-    SparseArrayNode* tempPtr = headPointer -> next;
-    unsigned long int count = 0;
+    if (headPointer == nullptr)
+        return nullptr;
+    SparseArrayNode* tempPtr = headPointer;
+    SparseArrayNode* prePtr = nullptr;
     while (tempPtr != nullptr) {
-        
-            if (tempPtr != headPointer && count <= 0) {
-                Perviousptr = headPointer;
-                count++;
-            }
-            if (tempPtr != headPointer && count > 0 && tempPtr->index == index)
-                return Perviousptr;
-            if(count > 0)
-                Perviousptr = Perviousptr->next;
+        if (tempPtr->index == index)
+            return prePtr;
+        prePtr = tempPtr;
         tempPtr = tempPtr->next;
     }
+    assert(invariant());
     return nullptr;
 }
 SparseArrayNode* SparseArray::copyLinkedList(const SparseArrayNode* p_old_head) const {
@@ -175,75 +171,74 @@ void SparseArray::printNodes() const {
 }
 void SparseArray::insert(int index, const string& value) {
     assert(invariant());
-    if (value != defaultValue) {
-        SparseArrayNode* newNode = new SparseArrayNode;
-        newNode->value = value;
-        newNode->index = index;
-        if (headPointer == nullptr) {
-            headPointer = newNode;
-            headPointer->next = nullptr;
+    if (value == defaultValue) {
+        if (getExactNode(index) != nullptr) {
+            remove(index);
+            return;
         }
-        else
+    }
+    else {
+        if (getExactNode(index) != nullptr && headPointer != nullptr)
         {
-            SparseArrayNode* tempPtr = headPointer;
-            while (tempPtr != nullptr) {
-                if ((int)tempPtr->index == (int)index) {
-                    tempPtr->value = value;
-                    assert(invariant());
+            SparseArrayNode* temp = headPointer;
+            while (headPointer != nullptr) {
+                if (headPointer->index == index) {
+                    headPointer->value = value;
+                    headPointer = temp;
                     return;
                 }
-                tempPtr = tempPtr->next;
+                headPointer = headPointer->next;
             }
-            tempPtr = headPointer;
-            SparseArrayNode* nullPtrPervious = nullptr;
-            unsigned long int checkIndex;
-            while (tempPtr != nullptr) { //find the address of present index is less then inserting index
-                checkIndex = tempPtr->index;
-                if ((int)index < (int)checkIndex) {
-                    break;
-                }
-                nullPtrPervious = tempPtr;
-                tempPtr = tempPtr->next;
-            }
-            if (tempPtr == headPointer) {
+        }
+        else if (headPointer == nullptr) {
+            SparseArrayNode* newNode = new SparseArrayNode;
+            newNode->index = index;
+            newNode->value = value;
+            newNode->next = headPointer;
+            headPointer = newNode;
+        }
+        else if (headPointer != nullptr && getExactNode(index) == nullptr) {
+            SparseArrayNode* newNode = new SparseArrayNode;
+            newNode->index = index;
+            newNode->value = value;
+
+            if (headPointer->index >= index) {
                 newNode->next = headPointer;
                 headPointer = newNode;
             }
-            else if (tempPtr != nullptr && tempPtr != headPointer) {
-                newNode->next = tempPtr;
-                nullPtrPervious->next = newNode;
+            else {
+                SparseArrayNode* temp = headPointer;
+                SparseArrayNode* previousptr = nullptr;
+                while (temp != nullptr) {
+                    if (temp->index >= index)
+                        break;
+                    previousptr = temp;
+                    temp = temp->next;
+                }
+                newNode->next = previousptr->next;
+                previousptr->next = newNode;
             }
-            else if (tempPtr == nullptr && tempPtr != headPointer) {
-                newNode->next = nullptr;
-                nullPtrPervious->next = newNode;
-            }
-            nullPtrPervious = nullptr;
-            tempPtr = nullptr;
         }
-    }
-    else if (value == getDefaultValue()) {
-        if (headPointer == nullptr) {
-            return;
-        }
-        remove(index);
     }
     assert(invariant());
 }
 void SparseArray::remove(int index) {
-    assert(invariant());
-    SparseArrayNode* tempPtr = headPointer;
+    if (headPointer == nullptr) {
+        return;
+    }
+    if (headPointer->index == index) {
+        headPointer = headPointer->next;
+        return;
+    }
+    SparseArrayNode* tempPtr = headPointer->next;
     while (tempPtr != nullptr) {
-        if (tempPtr->index == index && tempPtr == headPointer) {
-                headPointer = headPointer->next;
-        }
-        else if(tempPtr -> index == index && tempPtr != headPointer){
-                SparseArrayNode* perviousNextPtr = getPreviousNode(index);
-
-                perviousNextPtr->next = tempPtr->next;
+        if (tempPtr->index == index) {
+            SparseArrayNode* temp = getPreviousNode(index);
+            temp->next = tempPtr->next;
+            return;
         }
         tempPtr = tempPtr->next;
     }
-    assert(invariant());
 }
 void SparseArray::clear() {
     assert(invariant());
